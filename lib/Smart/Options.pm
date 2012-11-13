@@ -2,7 +2,7 @@ package Smart::Options;
 use strict;
 use warnings;
 use 5.010001;
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 require Exporter;
 our @ISA = qw(Exporter);
@@ -13,15 +13,27 @@ use Text::Table;
 
 sub new {
     my $pkg = shift;
+    my %opt = @_;
 
-    bless {
+    my $self = bless {
         alias    => {},
         default  => {},
         boolean  => {},
         demand   => {},
         usage    => "Usage: $0",
         describe => {},
+        subcmd   => {},
     }, $pkg;
+
+    if ($opt{add_help} // 1) {
+        $self->options(h => {
+                alias => 'help',
+                describe => 'show help',
+            });
+        $self->{add_help} = 1;
+    }
+
+    $self;
 }
 
 sub argv {
@@ -43,6 +55,7 @@ sub _set {
 sub alias { shift->_set('alias', @_) }
 sub default { shift->_set('default', @_) }
 sub describe { shift->_set('describe', @_) }
+sub subcmd { shift->_set('subcmd', @_) }
 
 sub _set_flag {
     my $self = shift;
@@ -76,39 +89,70 @@ sub usage { $_[0]->{usage} = $_[1]; $_[0] }
 sub _get_opt_desc {
     my ($self, $option) = @_;
 
-    my $desc = (length($option) == 1 ? '-' : '--') . $option;
-    if (my $alias = $self->{alias}->{$option}) {
-        $desc .= ", " . (length($alias) == 1 ? '-' : '--') . $alias;
+    my @opts = ($option);
+    while ( my($opt, $val) = each %{$self->{alias}} ) {
+        push @opts, $opt if $val eq $option;
     }
 
-    $desc;
+    return join(', ', map { (length($_) == 1 ? '-' : '--') . $_ } sort @opts);
+}
+
+sub _get_describe {
+    my ($self, $option) = @_;
+
+    my $desc = $self->{describe}->{$option};
+    while ( my($opt, $val) = each %{$self->{alias}} ) {
+        $desc ||= $self->{describe}->{$opt} if $val eq $option;
+    }
+
+    return $desc ? ucfirst($desc) : '';
+}
+
+sub _get_default {
+    my ($self, $option) = @_;
+
+    my $value = $self->{default}->{$option};
+    while ( my($opt, $val) = each %{$self->{alias}} ) {
+        $value ||= $self->{default}->{$opt} if $val eq $option;
+    }
+
+    $value;
 }
 
 sub help {
     my $self = shift;
 
+    my $alias = $self->{alias};
     my $demand = $self->{demand};
     my $describe = $self->{describe};
     my $default = $self->{default};
+    my $boolean = $self->{boolean};
     my $help = $self->{usage} . "\n";
 
     if (scalar(keys %$demand) or scalar(keys %$describe)) {
         my @opts;
-        for my $opt (uniq sort keys %$demand, keys %$describe) {
+        for my $opt (uniq sort keys %$demand, keys %$describe, keys %$default, keys %$boolean, values %$alias) {
+            next if $alias->{$opt};
             push @opts, [
                 $self->_get_opt_desc($opt),
-                $describe->{$opt} || '',
-                $self->{boolean}->{$opt} ? '[boolean]' : '',
+                $self->_get_describe($opt),
+                $boolean->{$opt} ? '[boolean]' : '',
                 $demand->{$opt} ? '[required]' : '',
-                $default->{$opt} ? "[default: @{[$default->{$opt}]}]" : '',
+                $self->_get_default($opt) ? "[default: @{[$self->_get_default($opt)]}]" : '',
             ];
         }
 
         my $sep = \'  ';
         $help .= "\nOptions:\n";
         $help .= Text::Table->new( $sep, '', $sep, '', $sep, '', $sep, '', $sep, '' )
-                            ->load(@opts)->stringify;
+                            ->load(@opts)->stringify . "\n";
+        if (keys %{$self->{subcmd}}) {
+            $help .= "Implemented commands are:\n";
+            $help .= "  " . join(', ', sort keys %{$self->{subcmd}}) . "\n\n";
+        }
     }
+
+    $help;
 }
 
 sub showHelp {
@@ -135,13 +179,21 @@ sub _set_v2a {
     }
 }
 
+sub _get_real_name {
+    my ($self, $opt) = @_;
+
+    while (my $name = $self->{alias}->{$opt}) {
+        $opt = $name;
+    }
+    return $opt;
+}
+
 sub parse {
     my $self = shift;
     push @_, @ARGV unless @_;
 
     my $argv = {};
     my @args;
-    my $alias = $self->{alias};
     my $boolean = $self->{boolean};
 
     my $key;
@@ -151,16 +203,16 @@ sub parse {
             push @args, $arg;
             next;
         }
-        if ($arg =~ /^--(\w+)=(.+)$/) {
-            my $option = $alias->{$1} // $1;
+        if ($arg =~ /^--((?:\w|-)+)=(.+)$/) {
+            my $option = $self->_get_real_name($1);
             _set_v2a($argv, $option, $2);
         }
-        elsif ($arg =~ /^(-(\w+)|--(\w+))$/) {
+        elsif ($arg =~ /^(-(\w(?:\w|-)*)|--((?:\w|-)+))$/) {
             if ($key) {
                 $argv->{$key} = 1;
             }
             my $opt = $2 // $3;
-            my $option = $alias->{$opt} // $opt;
+            my $option = $self->_get_real_name($opt);
             if ($boolean->{$option}) {
                 $argv->{$option} = 1;
             }
@@ -179,6 +231,17 @@ sub parse {
                 $key = undef; # reset
             }
             else {
+                if (!scalar(@args) && keys %{$self->{subcmd}}) {
+                    if ( $self->{subcmd}->{$arg} ) {
+                        $argv->{command} = $arg;
+                        $stop = 1;
+                        next;
+                    }
+                    else {
+                        die "sub command '$arg' not defined.";
+                    }
+                }
+
                 push @args, $arg;
             }
         }
@@ -186,10 +249,20 @@ sub parse {
     if ($key) {
         $argv->{$key} = 1;
     }
-    $argv->{_} = \@args;
+
+    if (my $parser = $self->{subcmd}->{$argv->{command}||''}) {
+        $argv->{cmd_option} = $parser->parse(@args);
+    } else {
+        $argv->{_} = \@args;
+    }
 
     while (my ($key, $val) = each %{$self->{default}}) {
-        $argv->{$key} //= $val;
+        if (ref($val) && ref($val) eq 'CODE') {
+            $argv->{$key} //= $val->();
+        }
+        else {
+            $argv->{$key} //= $val;
+        }
     }
 
     for my $opt (keys %{$self->{demand}}) {
@@ -198,6 +271,11 @@ sub parse {
             print STDERR "\nMissing required arguments: $opt\n";
             die;
         }
+    }
+
+    if ($argv->{help} && $self->{add_help}) {
+        $self->showHelp;
+        die;
     }
 
     $argv;
@@ -348,6 +426,19 @@ return help message string
 =head2 showHelp($fh)
 
 print usage message. default output STDERR.
+
+=head2 subcmd($cmd => $parser)
+
+set a sub command. $parser is another Smart::Option object.
+
+  use Smart::Options;
+  my $opt = Smart::Options->new()
+              ->subcmd(add => Smart::Options->new())
+              ->subcmd(minus => Smart::Options->new());
+
+=head1 DSL
+
+see also L<Smart::Options::Declare>
 
 =head1 PARSING TRICKS
 

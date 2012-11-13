@@ -4,7 +4,7 @@
       "Kan Fushihara E<lt>kan.fushihara@gmail.comE<gt>"
    ],
    "dynamic_config" : 0,
-   "generated_by" : "Module::Build version 0.3901, CPAN::Meta::Converter version 2.120630",
+   "generated_by" : "Module::Build version 0.4003, CPAN::Meta::Converter version 2.120921",
    "license" : [
       "perl_5"
    ],
@@ -36,6 +36,7 @@
          "requires" : {
             "Exporter" : "0",
             "List::MoreUtils" : "0",
+            "PadWalker" : "0",
             "Text::Table" : "0",
             "perl" : "5.010001"
          }
@@ -44,7 +45,11 @@
    "provides" : {
       "Smart::Options" : {
          "file" : "lib/Smart/Options.pm",
-         "version" : "0.01"
+         "version" : "0.02"
+      },
+      "Smart::Options::Declare" : {
+         "file" : "lib/Smart/Options/Declare.pm",
+         "version" : 0
       }
    },
    "release_status" : "stable",
@@ -53,5 +58,5 @@
          "http://dev.perl.org/licenses/"
       ]
    },
-   "version" : "0.01"
+   "version" : "0.02"
 }

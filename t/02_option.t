@@ -34,7 +34,7 @@ subtest 'boolean' => sub {
 };
 
 subtest 'demand' => sub {
-    my $opts = Smart::Options->new
+    my $opts = Smart::Options->new(add_help => 0)
                     ->usage("Usage: $0 -x [num] -y [num]")
                     ->demand('x', 'y');
 
@@ -46,12 +46,13 @@ Options:
   -x      [required]  
   -y      [required]  
 
+
 Missing required arguments: y
 EOS
 };
 
 subtest 'describe' => sub {
-    my $opts = Smart::Options->new
+    my $opts = Smart::Options->new(add_help => 0)
                     ->usage("Usage: $0 -x [num] -y [num]")
                     ->demand('x', 'y')
                     ->describe(f => 'Load a file', y => 'year');
@@ -63,14 +64,15 @@ Usage: $0 -x [num] -y [num]
 Options:
   -f  Load a file                
   -x                 [required]  
-  -y  year           [required]  
+  -y  Year           [required]  
+
 
 Missing required arguments: y
 EOS
 };
 
 subtest 'options' => sub {
-    my $opts = Smart::Options->new();
+    my $opts = Smart::Options->new(add_help => 0);
     $opts->usage("Usage: $0 -x [num] -y [num]");
     $opts->options(
         f => {
@@ -85,6 +87,7 @@ Usage: $0 -x [num] -y [num]
 
 Options:
   -f, --file  Load a file      [default: /etc/passwd]
+
 EOS
 
     is $opts->parse()->{f}, '/etc/passwd';
