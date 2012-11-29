@@ -4,6 +4,7 @@ author:
   - 'Kan Fushihara E<lt>kan.fushihara@gmail.comE<gt>'
 build_requires:
   Capture::Tiny: 0
+  Test::Exception: 0
   Test::More: 0.98
   Test::Requires: 0
   Try::Tiny: 0
@@ -22,7 +23,7 @@ no_index:
 provides:
   Smart::Options:
     file: lib/Smart/Options.pm
-    version: 0.02
+    version: 0.021
   Smart::Options::Declare:
     file: lib/Smart/Options/Declare.pm
     version: 0
@@ -34,4 +35,4 @@ requires:
   perl: 5.010001
 resources:
   license: http://dev.perl.org/licenses/
-version: 0.02
+version: 0.021
