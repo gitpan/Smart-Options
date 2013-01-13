@@ -6,8 +6,21 @@ use Exporter 'import';
 use Smart::Options;
 use PadWalker qw/var_name/;
 
-our @EXPORT = qw(opts);
+our @EXPORT = qw(opts opts_coerce);
 
+our $COERCE = {
+    Multiple => {
+        type      => 'ArrayRef',
+        generater => sub {
+            [
+                split(
+                    qr{,},
+                    ref( $_[0] ) eq 'ARRAY' ? join( q{,}, @{ $_[0] } ) : $_[0]
+                )
+            ];
+          }
+    }
+};
 my %is_invocant = map{ $_ => undef } qw($self $class);
 
 sub opts {
@@ -56,6 +69,19 @@ sub opts {
                 if ($rule->{comment}) {
                     $opt->describe($name => $rule->{comment});
                 }
+
+                if (my $isa = $rule->{isa}) {
+                    if ($isa eq 'Bool') {
+                        $opt->boolean($name);
+                    }
+                    $opt->type($name => $isa);
+                }
+            }
+            else {
+                if ($rule eq 'Bool') {
+                    $opt->boolean($name);
+                }
+                $opt->type($name => $rule);
             }
         }
 
@@ -65,6 +91,10 @@ sub opts {
         }
 
         $i++ if defined $_[$i+1]; # discard type info
+    }
+
+    while (my ($isa, $c) = each(%$COERCE)) {
+        $opt->coerce($isa => $c->{type}, $c->{generater});
     }
 
     my $argv = $opt->parse;
@@ -77,6 +107,12 @@ sub opts {
         $_[$i] = $argv->{$name};
         $i++ if defined $_[$i+1]; # discard type info
     }
+}
+
+sub opts_coerce {
+    my ($isa, $type, $generater) = @_;
+
+    $COERCE->{$isa} = { type => $type, generater => $generater };
 }
 
 1;
@@ -92,7 +128,7 @@ Smart::Options::Declare - DSL for Smart::Options
 
   use Smart::Options::Declare;
 
-  opts my $rif, my $xup;
+  opts my $rif => 'Int', my $xup => 'Num';
 
   if ($rif - 5 * $xup > 7.138) {
       say 'Buy more fiffiwobbles';
@@ -111,7 +147,73 @@ Smart::Options::Declare - DSL for Smart::Options
 
 Smart::Options::Declare is a library which offers DSL for Smart::Options. 
 
+=head1 METHOD
+
+=head2 opts $var => TYPE, $var2 => { isa => TYPE, RULE => ... }
+
+set option value to variable.
+
+  use Smart::Options::Declare;
+  
+  opts my $var => 'Str', my $value => { isa => 'Int', default => 4 };
+
+=head2 opts_coerce ( NewType, Source, Generater )
+
+define new type and convert logic.
+
+  opts_coerce Time => 'Str', sub { Time::Piece->strptime($_[0]) }
+  
+  opts my $time => 'Time';
+  
+  $time->hour;
+
+=head1 RULE
+
+=head2 isa
+define option value type. see L</TYPES>.
+
+=head2 required
+define option value is required.
+
+=head2 default
+define options default value. If passed a coderef, it
+will be executed if no value is provided on the command line.
+
+=head2 alias
+define option param's alias.
+
+=head2 comment
+this comment is used to generate help. help can show --help
+
+=head1 TYPES
+
+=head2 Str
+
+=head2 Int
+
+=head2 Num
+
+=head2 Bool
+
+=head2 ArrayRef
+
+=head2 HashRef
+
+=head2 Multiple
+
 =head1 AUTHOR
+
+This subtype is based off of ArrayRef. It will attempt to split any values passed on the command line on a comma: that is,
+
+  opts my $foo => 'ArrayRef';
+  # script.pl --foo=one --foo=two,three
+  # => ['one', 'two,three']
+
+will become
+
+  opts my $foo => 'Multiple';
+  # script.pl --foo=one --foo=two,three
+  # => ['one', 'two', 'three']
 
 Kan Fushihara E<lt>kan.fushihara@gmail.comE<gt>
 
