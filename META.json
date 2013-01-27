@@ -22,6 +22,7 @@
       "build" : {
          "requires" : {
             "Capture::Tiny" : "0",
+            "File::Slurp" : "0",
             "File::Spec" : "0",
             "Test::Exception" : "0",
             "Test::More" : "0.98",
@@ -47,7 +48,7 @@
    "provides" : {
       "Smart::Options" : {
          "file" : "lib/Smart/Options.pm",
-         "version" : "0.04"
+         "version" : "0.05"
       },
       "Smart::Options::Declare" : {
          "file" : "lib/Smart/Options/Declare.pm",
@@ -60,5 +61,5 @@
          "http://dev.perl.org/licenses/"
       ]
    },
-   "version" : "0.04"
+   "version" : "0.05"
 }

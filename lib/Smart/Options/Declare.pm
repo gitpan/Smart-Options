@@ -35,6 +35,7 @@ sub opts {
     }
 
     my $opt = Smart::Options->new();
+    $opt->type(config => 'Config');
 
     for ( my $i = 0 ; $i < @_ ; $i++ ) {
         ( my $name = var_name( 1, \$_[$i] ) )
@@ -201,8 +202,6 @@ this comment is used to generate help. help can show --help
 
 =head2 Multiple
 
-=head1 AUTHOR
-
 This subtype is based off of ArrayRef. It will attempt to split any values passed on the command line on a comma: that is,
 
   opts my $foo => 'ArrayRef';
@@ -214,6 +213,8 @@ will become
   opts my $foo => 'Multiple';
   # script.pl --foo=one --foo=two,three
   # => ['one', 'two', 'three']
+
+=head1 AUTHOR
 
 Kan Fushihara E<lt>kan.fushihara@gmail.comE<gt>
 

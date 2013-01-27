@@ -132,7 +132,7 @@ is the same as
                 ->alias(f => 'file')
                 ->default(f => '/etc/passwd');
 
-## type
+## type($option => $type)
 
 set type check for option value
 
@@ -151,8 +151,25 @@ support type is here.
     Num
     ArrayRef
     HashRef
+    Config
 
-## coerce
+### Config
+
+'Config' is special type.
+The contents will be read into each option if a file name is specified as a Config type option. 
+
+    use Smart::Options;
+    my $opt = Smart::Options->new()->type(conf => 'Config');
+    $opt->parse(qw(--conf=.optrc));
+
+config file format is simple. see http://en.wikipedia.org/wiki/INI\_file
+
+    ; this is comment
+    [section]
+    key=value
+    key2=value2
+
+## coerce( $newtype => $sourcetype, $generator )
 
 define new type and convert logic.
 
