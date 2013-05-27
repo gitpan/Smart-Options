@@ -1,15 +1,12 @@
-.travis.yml
 Build.PL
 Changes
+LICENSE
+META.json
+README.md
 cpanfile
 lib/Smart/Options.pm
 lib/Smart/Options/Declare.pm
-LICENSE
-MANIFEST			This list of files
-META.json
-META.yml
-README
-README.md
+minil.toml
 t/00_compile.t
 t/01_parse.t
 t/02_option.t
@@ -19,6 +16,7 @@ t/05_subcmd.t
 t/06_type.t
 t/07_coerce.t
 t/08_config.t
+t/Utils.pm
 t/declare/01_basic.t
 t/declare/02_type.t
 t/declare/03_required.t
@@ -30,10 +28,6 @@ t/declare/08_alias.t
 t/declare/09_names_with_underscore.t
 t/declare/10_help.t
 t/declare/11_coerce.t
-t/Utils.pm
-xt/01_podspell.t
 xt/02_perlcritic.t
-xt/03_pod.t
-xt/04_minimum_version.t
-xt/05_cpan_meta.t
-xt/06_meta_author.t
+META.yml
+MANIFEST
