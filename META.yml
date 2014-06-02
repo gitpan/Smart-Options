@@ -3,26 +3,26 @@ abstract: 'smart command line options processor'
 author:
   - 'Kan Fushihara <kan.fushihara@gmail.com>'
 build_requires:
-  Capture::Tiny: 0.12
-  Devel::Cover: 0
-  File::Spec: 0
-  Test::Exception: 0
-  Test::More: 0.98
-  Test::Requires: 0
-  Test::TCP: 0
-  Try::Tiny: 0
+  Capture::Tiny: '0.12'
+  Devel::Cover: '0'
+  File::Spec: '0'
+  Test::Exception: '0'
+  Test::More: '0.98'
+  Test::Requires: '0'
+  Test::TCP: '0'
+  Try::Tiny: '0'
 configure_requires:
-  CPAN::Meta: 0
-  CPAN::Meta::Prereqs: 0
-  Module::Build: 0.38
-  Module::Build::Pluggable: 0
-  Module::Build::Pluggable::CPANfile: 0
+  CPAN::Meta: '0'
+  CPAN::Meta::Prereqs: '0'
+  Module::Build: '0.38'
+  Module::Build::Pluggable: '0'
+  Module::Build::Pluggable::CPANfile: '0'
 dynamic_config: 0
-generated_by: 'Minilla/v0.4.3, CPAN::Meta::Converter version 2.120921'
+generated_by: 'Minilla/v1.1.0, CPAN::Meta::Converter version 2.133380'
 license: perl
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.4.html
-  version: 1.4
+  version: '1.4'
 name: Smart-Options
 no_index:
   directory:
@@ -33,26 +33,26 @@ no_index:
     - eg
     - examples
     - author
+    - builder
 provides:
   Smart::Options:
     file: lib/Smart/Options.pm
-    version: 0.053
+    version: '0.054'
   Smart::Options::Declare:
     file: lib/Smart/Options/Declare.pm
-    version: 0
 requires:
-  Exporter: 0
-  File::Slurp: 0
-  List::MoreUtils: 0
-  PadWalker: 0
-  Text::Table: 0
-  perl: 5.010001
+  Exporter: '0'
+  File::Slurp: '0'
+  List::MoreUtils: '0'
+  PadWalker: '0'
+  Text::Table: '0'
+  perl: '5.010001'
 resources:
   bugtracker: https://github.com/kan/p5-smart-options/issues
   homepage: https://github.com/kan/p5-smart-options
   repository: git://github.com/kan/p5-smart-options.git
-version: 0.053
+version: '0.054'
 x_contributors:
   - 'hayajo <hayajo@cpan.org>'
-  - 'Hiroyuki Akabane <hirobanex@gmail.com>'
   - 'Takuji Nishibayashi <takuji31@gmail.com>'
+  - 'Hiroyuki Akabane <hirobanex@gmail.com>'
